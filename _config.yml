@@ -1,15 +1,15 @@
 # ----
 # Site
 
-title: Edition Template
-url: "https://long-pig.cloudvent.net"
+title: MechDancer 程序文档
+url: "https://docs.mechdancer.org"
 baseurl:
 google_analytics_key:
 show_full_navigation: true
 
 # Values for the jekyll-seo-tag gem (https://github.com/jekyll/jekyll-seo-tag)
 logo: /siteicon.png
-description: Product documentation template for Jekyll.
+description: MechDancer 机械舞者程序文档
 author:
   name:
   email:
@@ -36,6 +36,7 @@ exclude:
   - Gemfile.lock
   - README.md
   - LICENCE
+  - CNAME
 
 collections:
   docs:

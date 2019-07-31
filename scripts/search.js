@@ -76,7 +76,7 @@ layout: null
 			searchProcessEl.innerText = "Showing";
 		} else {
 			searchResultsEl.style.display = "none";
-			searchProcessEl.innerText = "No";
+			searchProcessEl.innerText = "未找到";
 		}
 	}
 
