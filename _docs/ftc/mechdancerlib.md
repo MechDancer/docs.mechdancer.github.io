@@ -53,7 +53,7 @@ abstract class UnicornBaseOpMode : OpMode() {
 }
 ```
 
-所有机器人附属的硬件设备都需要在这里定义。通过面向接口编程，具体设备的功能实现被隐藏了起来，向用户开放的仅是抽象的接口。因此，有着这些定义好的接口的变量需要在 `init()` 拿到底层创建实例的引用，换句话说就是向 `hardwaremap` 绑定。而且这些设备是平铺定义在类中的，并不便于管理。所以我们定义了一个东西叫做 *结构*，可以将机器人程序结构转化为多个层次结构的组合。看看我们现在的遥控程序：
+所有机器人附属的硬件设备都需要在这里定义。通过面向接口编程，具体设备的功能实现被隐藏了起来，向用户开放的仅是抽象的接口。因此，有着这些定义好的接口的变量需要在 `init()` 拿到底层创建实例的引用，换句话说就是向 `hardwaremap` 绑定。而且这些设备是平铺定义在类中的，并不便于管理。所以一个叫做 *结构* 的东西被定义了，它可以将机器人程序结构转化为多个层次结构的组合。看看有了它之后的遥控程序：
 
 ```kotlin
  with(robot) {
@@ -121,7 +121,7 @@ abstract class CompositeStructure(override val name: String) : Structure {
 
 ### 设备
 
-设备是控制系统的核心，是我们控制的目标。FIRST（Qualcomm）提供的封装已经很完美了，如果只考虑单个设备，唯一的不足在于输入和输出的单位没有统一，这给控制上带来了一些不必要的麻烦。为了修正这一点，我们为每个设备都创建了一个包包装器，同时引入了结构来适配整个库。此外，我们高度抽象了设备的具体行为，确保控制的纯净。由此，设备可以被分为两类：*效应器* 与*传感器*。
+设备是控制系统的核心，是我们控制的目标。FIRST（Qualcomm）提供的封装已经很完美了，如果只考虑单个设备，唯一的不足在于输入和输出的单位没有统一，这给控制上带来了一些不必要的麻烦。为了修正这一点，我们为每个设备都创建了一个包包装器，同时引入了结构来适配整个库。此外，通过高度抽象设备的具体行为，控制的纯净可以得到保证。由此，设备可以被分为两类：*效应器* 与*传感器*。
 
 #### 效应器
 
@@ -143,7 +143,9 @@ interface Motor : Structure {
 }
 ```
 
-对于控制者而言，他们只需要关心 `power` ——功率，以及 `direction` ——方向（暂时先忽略 `lock`）。方向一般用于修正电机安装在左侧或经过传动后方向需要修正。这些功能的具体实现并不重要，总之只有这些参数是可控的。顺带一提， `power` 的范围是 `[-1.0,1.0]`。
+对于控制者而言，他们只需要关心 `power` ——功率，以及 `direction` ——方向（暂时先忽略 `lock`）。方向一般用于修正电机安装在左侧或经过传动后方向需要修正。这些功能的具体实现并不重要，总之只有这些参数是可控的。
+
+> `power` 的范围是 `[-1.0,1.0]`。
 
 ##### 连续舵机
 
@@ -157,7 +159,9 @@ interface ContinuousServo : Structure {
 }
 ```
 
-它与电机的显著不同在于它是通过 pwm 控制的设备，而 pwm 输出在运行期具有被禁用的能力。后面还有这类设备。从用途来考虑从，连续舵机没有必要再单独抽象出方向。`power` 的范围是 `[-1.0,1.0]`。
+连续舵机与电机的显著不同在于它是通过 pwm 控制的设备，而 pwm 输出在运行期具有被禁用的能力。后面还有这类设备。从用途来考虑从，连续舵机没有必要再单独抽象出方向。
+
+> `power` 的范围是 `[-1.0,1.0]`。
 
 ##### Servo
 
@@ -191,7 +195,7 @@ interface Encoder : Structure {
 }
 ```
 
-我们将编码器与电机分离了。我们坚信编码器和电机应是相互独立的，是 FIRST 设计的美中不足之处。当然，在底层中编码器和电机还是绑定到了一个 `DCMotor` 上。 
+编码器与电机分离成了不同的借口。讲道理，编码器和电机应是相互独立的，它们相互可以独自存在。当然，在底层中编码器和电机还是绑定到了一个 `DCMotor` 上。 
 
 > `position` 的单位是 $rad$, `speed` 是 $rad/s$。
 
@@ -211,7 +215,7 @@ interface TouchSensor : Structure {
 }
 ```
 
-`bePressed()` 返回传感器按钮的当前状态， `isPressing()` 返回在循环周期中是否这是第一个按钮被按下的周期， `isReleasing()` 和 `isPressing()` 相似，不过返回的为是否第一个松开的周期。我们对 `Gamepad` 做了相同处理，具体细节可见[手柄](#Button)。
+`bePressed()` 返回传感器按钮的当前状态， `isPressing()` 返回在循环周期中是否这是第一个按钮被按下的周期， `isReleasing()` 和 `isPressing()` 相似，不过返回的为是否第一个松开的周期。`Gamepad` 应用了相同处理，具体细节可见[手柄](#Button)。
 
 ##### 颜色传感器
 
@@ -232,6 +236,8 @@ interface ColorSensor : Structure {
 }
 ```
 
+`ColorData` 为封装好的传感器数据，可以直接从 `colorData` 变量获取。`enableLed` 负责开关传感器上的 LED 灯（如果支持的话）。
+
 ##### 电压传感器
 
 ```kotlin
@@ -242,13 +248,15 @@ interface VoltageSensor : Structure {
 }
 ```
 
+电压传感器与其他设备不同，它**不能**自行定义或创建实例。若要使用，在后文提到的 `Robot` 结构中在 `enableVoltageSensor` 构造器参数传入 `true`，并使用 `@Inject` 注入即可。
+
 ### 预置结构
 
-我们提供了以下通用结构：
+为了便于使用，库中定义了以下通用结构：
 
 #### 电机 x 编码器
 
-As mentioned before, we divide the `Motor` and the `Encoder` into two parts according to their behavior. Although this is reasonable, in some cases it brings a lot of inconvenience. Therefore, a combination of motor and encoder is established. It is a `CompositeStructure`, have two substructures: a motor and a encoder. Through the combination of two devices, some new  behaviors come out. At the beginning of the design, we thought for a long time whether this class should be polymorphic. In other word, can `MotorWithEncoder` be `cast` to `Motor` or `Encoder`? i.e. have the behaviors of both of the above. That sounds right, but it's a special case. Think about it: can a mechanical arm with only one motor be counted as a motor? Actually, it is the pure combination of the two devices, and it just has the behavior of the two that makes polymorphism reasonable. And actually that's wrong. However for the sake of constraint its functions, we let it inherit class `Motor` and `Encoder`, let its substructures  work as delegates. Let's see some details:
+正如上文所述， `Motor` 和 `Encoder` 根据它们的行为被分离成了两部分。从意义上来说，这是合理的，但对于使用者而言却加大了复杂度。因此，电机与编码器的结合设备就这样诞生了。它是一个*复合结构* ，拥有两个子结构：一个电机和一个编码器。简单的两个设备结合到一起诞生了一些新的功能。在库设计之初，作者思考了很久`MotorWithEncoder` 这个类是否应该是多态的。换句话说就是这类的实例是否可以被强制转换为 `Motor` 或者 `Encoder`，并让使用者能够调用它们的函数（尽管在结合之后某些函数可能是无意义的）。这听起来是正确的，其实这种结合是一种特殊情况。考虑以下情况：一个单电机机械臂可以被看作是一个电机吗？显然不行。电机 x 编码器仅仅是两个设备放到一起，而并不是一个新的事物既是编码器又是电机，只不过恰好组合后提供的新行为看起来让多态是合理的，其实不然。但是为了约束结合物的行为，它还是继承了 `Motor` 和 `Encoder`，并将实现委托给两个成员，~~真香~~。来看看具体定义：
 
 ```kotlin
 interface MotorWithEncoder : Motor, Encoder, Structure {
@@ -269,11 +277,11 @@ interface MotorWithEncoder : Motor, Encoder, Structure {
 }
 ```
 
-What behaviors mentioned above are that this combination has kinds of abilities to close-loop-control.
+可以看到，以上的结合提供了闭环的能力。
 
-#### Chassis
+#### 底盘
 
-Chassis plays an important part of robot, so we provide basic definition of this structure:
+底盘是机器人重要且常用的一部分，所以库中给了一个抽象：
 
 ```kotlin
 abstract class Chassis(motorsConfig: Array<Pair<String, Motor.Direction>>, enable: Boolean)
@@ -329,7 +337,7 @@ abstract class Chassis(motorsConfig: Array<Pair<String, Motor.Direction>>, enabl
 
 ```
 
-As you've seen, chassis is a structure managing some motors assembly, which provide ability to process relationship between motors, including **standardize**. Therefore, is provided farther:
+如你所见，底盘聚合管理了一些电机，并处理电机之间的关系，例如**功率标准化**。有了底盘显然不够，还得来个全向底盘：
 
 ```kotlin
 abstract class Omnidirectinal
@@ -384,7 +392,7 @@ abstract class Omnidirectinal
 }
 ```
 
-Omnidirectinal is a kind of omni-directional mobile in *cartesian coordinate system*, there are three methods to control it, including `Descartes`, `TankMode`, and `Polar`. Notice that subclass need to declare motors and `transform` which describes how to drive this chassis. For convenience, drive way of mecanum chassis is built-in.
+全向底盘是一种全自由度移动平台。许多方式来控制它，包括：笛卡尔、坦克、极坐标。最终输出都会转成笛卡尔坐标系中的速度向量。该模型的子类需要声明底盘中的电机，并且将笛卡尔速度向量对应到物理模型的输出。为了方便使用，麦克纳姆底盘内置进了库中。
 
 ```kotlin
 open class Mecanum(override val name: String = "chassis",
@@ -411,9 +419,9 @@ open class Mecanum(override val name: String = "chassis",
 }
 ```
 
-Consequently, there is no need for you to write duplicated code anymore.
+终于不用重复写这些代码了～
 
-### Robot
+### 机器人
 
 Structure tree is the core of this library, every node of which is a structure. The foregoing implies that all devices have become *monomeric structure* which don't have substructures. Robot is the root of this tree, middleware structures we defined are leaves  under the robot, devices are at the lowest nodes. Therefore, parent nodes just need to manage theirs sons, call `run()` of them. Because of the transitivity, robot is the parent of all structures.  Lets see an example:
 
